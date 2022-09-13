@@ -4,5 +4,5 @@ export type Item = {
 }
 
 export type WithNonNullable<T> = {
-  [P in keyof T]: NonNullable<T[P]>
+  [P in keyof T]: T[P] | null
 }

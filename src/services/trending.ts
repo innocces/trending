@@ -49,6 +49,7 @@ export type Owner = {
 }
 
 export type RepositoryItem = {
+  id: number
   full_name: string
   html_url: string
   stargazers_count: number
@@ -56,14 +57,16 @@ export type RepositoryItem = {
   open_issues_count: number
   language: string
   description: string
-  languageColor?: string
+  languageColor: string
   starsSince: number
-  builtBy: Owner[]
+  builtBy: WithNonNullable<Owner>[]
 }
+
+export type Repositories = WithNonNullable<RepositoryItem>[]
 
 export const getRepositories = (
   payload?: GetRepositoriesPayload
-): Promise<WithNonNullable<RepositoryItem>[]> => {
+): Promise<Repositories> => {
   const useTrending = checkUseTrending()
   const { since, lang } = payload ?? {}
   if (useTrending) {
@@ -88,6 +91,7 @@ export const getRepositories = (
         return (
           data?.items?.map?.(
             ({
+              id,
               full_name,
               html_url,
               stargazers_count,
@@ -97,6 +101,7 @@ export const getRepositories = (
               owner,
               language
             }) => ({
+              id,
               full_name,
               html_url,
               stargazers_count,
@@ -105,11 +110,12 @@ export const getRepositories = (
               description,
               language,
               starsSince: stargazers_count,
+              languageColor: 'purple.300',
               builtBy: [
                 {
-                  username: owner?.login,
-                  avatar: owner?.avatar_url,
-                  url: owner?.html_url
+                  username: owner?.login ?? '',
+                  avatar: owner?.avatar_url ?? '',
+                  url: owner?.html_url ?? ''
                 }
               ]
             })

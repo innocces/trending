@@ -1,5 +1,4 @@
 import { useState, useCallback, useEffect } from 'react'
-import { Link } from 'react-router-dom'
 import {
   Container,
   Center,
@@ -8,13 +7,15 @@ import {
   Box,
   useColorModeValue,
   Button,
-  useToast
+  useToast,
+  Spinner
 } from '@chakra-ui/react'
 import AnimationList from '@components/AnimationList/index'
 import CustomMenu from '@components/CustomMenu/index'
 
 import { getLanguage, getSpokenLanguage } from '@service/resources'
 import { getRepositories } from '@service/trending'
+import type { Repositories } from '@service/trending'
 import type { Item } from '@/type'
 import { DATERANGE, SEARCHTYPE } from '@const/condition'
 
@@ -34,6 +35,7 @@ function Home() {
   const [language, setLanguage] = useState<Item[]>([])
   const [condition, setCondition] = useState<Condition>(INITCONDITION)
   const [searchType, setSearchType] = useState<string>(SEARCHTYPE[0].value)
+  const [list, setList] = useState<Repositories>([])
 
   // theme
   const cardBackground = useColorModeValue('gray.50', 'blackAlpha.300')
@@ -51,9 +53,10 @@ function Home() {
 
   const fetchRepositories = useCallback(async () => {
     setLoading(true)
+    setList([])
     try {
       const response = await getRepositories(condition)
-      console.log(response)
+      setList(response)
     } catch (e) {
       console.log(e)
       toast({
@@ -126,6 +129,7 @@ function Home() {
                 onClick={() => setSearchType(value)}
                 borderRightRadius={!index ? 0 : 'md'}
                 borderLeftRadius={index ? 0 : 'md'}
+                isLoading={loading}
               >
                 {label}
               </Button>
@@ -137,6 +141,7 @@ function Home() {
             desc="Select a language"
             option={language}
             onChange={(lang) => setCondition({ ...condition, lang })}
+            loading={loading}
           />
           <CustomMenu
             value={condition.since}
@@ -145,9 +150,15 @@ function Home() {
             onChange={(since) => setCondition({ ...condition, since })}
             option={DATERANGE}
             autoHeight
+            loading={loading}
           />
         </Box>
-        <AnimationList />
+        {loading && (
+          <Center minH="70vh">
+            <Spinner label="loading..." size="lg" color="brand.300" />
+          </Center>
+        )}
+        <AnimationList since={condition.since} list={list} />
       </Container>
     </>
   )

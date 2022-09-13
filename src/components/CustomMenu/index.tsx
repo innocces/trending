@@ -20,6 +20,7 @@ export type CustomMenuProps = {
   option: Item[]
   autoHeight?: boolean
   onChange?: (value: string) => void
+  loading?: boolean
 }
 
 const CustomMenu: FC<CustomMenuProps> = ({
@@ -28,7 +29,8 @@ const CustomMenu: FC<CustomMenuProps> = ({
   valueLabel,
   option,
   onChange,
-  autoHeight
+  autoHeight,
+  loading
 }) => {
   const [controlValue, setControlValue] = useState<string>(value ?? '')
 
@@ -47,7 +49,7 @@ const CustomMenu: FC<CustomMenuProps> = ({
 
   return (
     <Menu autoSelect={!value}>
-      <MenuButton as={Button} variant="ghost" size="sm">
+      <MenuButton as={Button} variant="ghost" size="sm" isLoading={loading}>
         {valueLabel} {selectedLabel}
       </MenuButton>
       <MenuList maxH={autoHeight ? 'max-content' : '300px'} overflow="auto">
