@@ -13,22 +13,21 @@ function request(): RestEndpointMethods {
 
 export default request
 
-export function gitFetch(input: RequestInfo | URL, init?: RequestInit) {
+export function gitFetch(
+  input: RequestInfo | URL,
+  init?: RequestInit & { needToken?: boolean }
+) {
   const { token } = getItem<Setting>(STORAGEKEY, {})
+  const { needToken, ...requestInit } = init ?? {}
   if (token) {
     init = {
-      ...(init ?? {}),
-      headers: { ...(init?.headers ?? {}), Authorization: `Bearer ${token}` },
-      mode: 'no-cors'
+      ...(requestInit ?? {}),
+      headers: {
+        ...(requestInit?.headers ?? {}),
+        ...(needToken ? { Authorization: `Bearer ${token}` } : {})
+      },
+      mode: 'cors'
     }
   }
-  return fetch(input, init).then(async (res) => {
-    let response = res
-    try {
-      response = await res.json()
-    } catch (e) {
-      console.log(e)
-    }
-    return response
-  })
+  return fetch(input, init)
 }

@@ -5,7 +5,7 @@ import type { Setting } from '@components/SettingPanel/index'
 import type { WithNonNullable } from '@/type'
 import dayjs from 'dayjs'
 // public trending host by scan trending page
-export const trendingHost = '//gh-trending-api.herokuapp.com'
+export const trendingHost = '//gh-trending.deno.dev'
 
 function checkUseTrending(): boolean {
   const { useTrending = false } = getItem<Setting>(STORAGEKEY, {})
@@ -64,6 +64,19 @@ export type RepositoryItem = {
 
 export type Repositories = WithNonNullable<RepositoryItem>[]
 
+export type TrendingRepoItem = {
+  forks: number
+  language: string
+  description: string
+  languageColor: string
+  starsSince: number
+  totalStars: number
+  builtBy: WithNonNullable<Owner>[]
+  repositoryName: string
+  url: string
+  username: string
+}
+
 export const getRepositories = (
   payload?: GetRepositoriesPayload
 ): Promise<Repositories> => {
@@ -73,7 +86,35 @@ export const getRepositories = (
     const requestURI = lang ? `/repositories/${lang}` : '/repositories'
     const qs = since ? `?since=${since}` : ''
     const url = generateTrendingURI(requestURI + qs)
-    return gitFetch(url)
+    return gitFetch(url).then(async (res) => {
+      try {
+        const response = await res.json()
+        return response.map(
+          (
+            {
+              totalStars,
+              url,
+              username,
+              repositoryName,
+              forks,
+              ...repo
+            }: TrendingRepoItem,
+            index: number
+          ) => ({
+            id: index,
+            full_name: `${username}/${repositoryName}`,
+            html_url: url,
+            stargazers_count: totalStars,
+            forks_count: forks,
+            open_issues_count: 0,
+            ...repo
+          })
+        )
+      } catch (e) {
+        console.log(e, res)
+      }
+      return []
+    })
   }
 
   const createAt = getCreateTime(since)

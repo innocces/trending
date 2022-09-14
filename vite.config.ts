@@ -11,13 +11,13 @@ export default defineConfig({
   plugins: [react(), basicSsl()],
   resolve: {
     alias: {
-      '@': 'src',
-      '@layout': 'src/layout',
-      '@page': 'src/pages',
-      '@assets': 'src/assets',
-      '@components': 'src/components',
-      '@const': 'src/constant',
-      '@service': 'src/services',
+      '@': '/src',
+      '@layout': '/src/layout',
+      '@page': '/src/pages',
+      '@assets': '/src/assets',
+      '@components': '/src/components',
+      '@const': '/src/constant',
+      '@service': '/src/services',
       'node-fetch': 'isomorphic-fetch'
     }
   },
