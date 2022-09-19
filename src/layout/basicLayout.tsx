@@ -38,7 +38,7 @@ const BasicLayout = () => {
   }, [colorMode])
 
   return (
-    <Box pos="absolute" w="full">
+    <Box pos="absolute" w="full" h="full">
       <Box boxShadow="lg" minW="sm" h="62px" p="16px">
         <Flex flex="1" alignItems="center" justifyContent="space-between">
           <Flex flexGrow="1">

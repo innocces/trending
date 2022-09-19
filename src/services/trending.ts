@@ -40,6 +40,7 @@ function getCreateTime(since?: string): string {
 export type GetRepositoriesPayload = {
   since?: string
   lang?: string
+  spoken_language_code?: string
 }
 
 export type Owner = {
@@ -81,10 +82,19 @@ export const getRepositories = (
   payload?: GetRepositoriesPayload
 ): Promise<Repositories> => {
   const useTrending = checkUseTrending()
-  const { since, lang } = payload ?? {}
+  const { since, lang, spoken_language_code } = payload ?? {}
   if (useTrending) {
-    const requestURI = lang ? `/repositories/${lang}` : '/repositories'
-    const qs = since ? `?since=${since}` : ''
+    const requestURI = lang
+      ? `/repositories/${encodeURIComponent(lang)}`
+      : '/repositories'
+    const query = {
+      since,
+      spoken_language_code
+    }
+    const qs = `?${Object.entries(query)
+      .filter((v) => v[1])
+      .map((v) => v.join('='))
+      .join('&')}`
     const url = generateTrendingURI(requestURI + qs)
     return gitFetch(url).then(async (res) => {
       try {

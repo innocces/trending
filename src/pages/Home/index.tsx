@@ -18,14 +18,19 @@ import { getRepositories } from '@service/trending'
 import type { Repositories } from '@service/trending'
 import type { Item } from '@/type'
 import { DATERANGE, SEARCHTYPE } from '@const/condition'
+import { STORAGEKEY } from '@const/storage'
+import { getItem, addListener } from '@/utils/storage'
+import type { Setting } from '@components/SettingPanel/index'
 
 export type Condition = {
   lang?: string
+  spoken_language_code?: string
   since: string
 }
 
 const INITCONDITION: Condition = {
   lang: undefined,
+  spoken_language_code: undefined,
   since: DATERANGE[0].value
 }
 
@@ -36,6 +41,9 @@ function Home() {
   const [condition, setCondition] = useState<Condition>(INITCONDITION)
   const [searchType, setSearchType] = useState<string>(SEARCHTYPE[0].value)
   const [list, setList] = useState<Repositories>([])
+  const [trending, setTrending] = useState<boolean>(
+    getItem<Setting>(STORAGEKEY, {})?.useTrending ?? false
+  )
 
   // theme
   const cardBackground = useColorModeValue('gray.50', 'blackAlpha.300')
@@ -69,6 +77,9 @@ function Home() {
 
   useEffect(() => {
     fetchResource()
+    addListener<Setting>(STORAGEKEY, (value) =>
+      setTrending(value.useTrending ?? false)
+    )
   }, [])
 
   useEffect(() => {
@@ -144,6 +155,17 @@ function Home() {
             loading={loading}
           />
           <CustomMenu
+            value={condition.spoken_language_code}
+            valueLabel="Spoken Language:"
+            desc="Select a spoken language"
+            option={spokenLang}
+            onChange={(spoken_language_code) =>
+              setCondition({ ...condition, spoken_language_code })
+            }
+            loading={loading}
+            disabled={!trending}
+          />
+          <CustomMenu
             value={condition.since}
             valueLabel="Date range:"
             desc="Adjust time span"
@@ -154,11 +176,17 @@ function Home() {
           />
         </Box>
         {loading && (
-          <Center minH="70vh">
+          <Center h="50vh">
             <Spinner label="loading..." size="lg" color="brand.300" />
           </Center>
         )}
-        <AnimationList since={condition.since} list={list} />
+        {!loading && list.length ? (
+          <AnimationList since={condition.since} list={list} />
+        ) : (
+          <Center h="50vh">
+            <Button variant="ghost">暂无数据</Button>
+          </Center>
+        )}
       </Container>
     </>
   )
